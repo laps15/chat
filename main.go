@@ -9,8 +9,8 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/laps15/go-chat/internal/app"
 	"github.com/laps15/go-chat/internal/auth"
+	"github.com/laps15/go-chat/internal/chats"
 	"github.com/laps15/go-chat/internal/handlers"
-	"github.com/laps15/go-chat/internal/messages"
 	"github.com/laps15/go-chat/internal/users"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -54,10 +54,10 @@ func main() {
 	e.Use(session.Middleware(sessions.NewCookieStore([]byte(appConfig.SessionStoreSecret))))
 
 	usersRepo := users.NewUsersRepository(db)
-	messagesRepo := messages.NewMessagesRepository(db)
+	chatsRepo := chats.NewChatsRepository(db)
 
 	usersService := users.NewUsersService(usersRepo)
-	messagesService := messages.NewMessagesService(messagesRepo)
+	chatsService := chats.NewChatsService(chatsRepo)
 	authService := auth.NewAuthService(usersRepo)
 
 	auth.InitSessionManager(&auth.SessionManager{
@@ -68,15 +68,13 @@ func main() {
 	authHandlers := &handlers.AuthHandlers{
 		AuthService: authService,
 	}
-	messagesHandlers := &handlers.MessageHandlers{
-		MessagesService: messagesService,
+	chatHandlers := &handlers.ChatHandlers{
+		ChatsService: chatsService,
 	}
 
 	app.RegisterHandlers(e,
 		authHandlers,
-		messagesHandlers)
-
-	// handlers.RegisterHandlers(e)
+		chatHandlers)
 
 	e.Logger.Fatal(e.Start(":8090"))
 }

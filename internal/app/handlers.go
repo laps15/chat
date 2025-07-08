@@ -11,11 +11,11 @@ type IHandlers interface {
 }
 
 func RegisterHandlers(e *echo.Echo, handlers ...IHandlers) {
-	auth_group := e.Group("")
-	auth_group.Use(auth.GetSessionManager().AuthenticatedMiddleware)
+	authGroup := e.Group("")
+	authGroup.Use(auth.GetSessionManager().AuthenticatedMiddleware)
 
 	for _, handler := range handlers {
-		handler.SetAuthGroup(auth_group)
+		handler.SetAuthGroup(authGroup)
 		handler.RegisterHandlers(e)
 	}
 }

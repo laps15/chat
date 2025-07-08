@@ -3,15 +3,15 @@ package components
 import (
     "github.com/laps15/go-chat/internal/app/components"
     "github.com/laps15/go-chat/internal/users"
-    "github.com/laps15/go-chat/internal/messages"
+    "github.com/laps15/go-chat/internal/chats"
 )
 
 type MessageIndexProps struct {
     User *users.User
-    Chats []messages.Chat
+    Chats []chats.Chat
 }
 
-templ Messages(props MessageIndexProps) {
+templ Index(props MessageIndexProps) {
     @components.App("Chat!") {
         <p>Welcome to chat: {props.User.Username}</p>
         <div>

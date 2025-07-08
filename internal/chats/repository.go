@@ -1,26 +1,26 @@
-package messages
+package chats
 
 import (
 	"database/sql"
 
-	"github.com/laps15/go-chat/internal/messages/internal/queries"
+	"github.com/laps15/go-chat/internal/chats/internal/queries"
 )
 
-type IMessagesRepository interface {
+type IChatsRepository interface {
 	CreateMessage(message *Message) (*Message, error)
 	GetMessagesBySenderAndReceiver(senderID int64, receiverID int64) ([]Message, error)
 	GetChatsForUser(userId int64) ([]Chat, error)
 }
 
-type MessagesRepository struct {
+type ChatsRepository struct {
 	db *sql.DB
 }
 
-func NewMessagesRepository(db *sql.DB) *MessagesRepository {
-	return &MessagesRepository{db: db}
+func NewChatsRepository(db *sql.DB) *ChatsRepository {
+	return &ChatsRepository{db: db}
 }
 
-func (mr *MessagesRepository) CreateMessage(message *Message) (*Message, error) {
+func (mr *ChatsRepository) CreateMessage(message *Message) (*Message, error) {
 	result, err := mr.db.Exec(queries.CreateMessageQuery,
 		sql.Named("from_id", message.Sender.ID),
 		sql.Named("to_id", message.Receiver.ID),
@@ -38,7 +38,7 @@ func (mr *MessagesRepository) CreateMessage(message *Message) (*Message, error) 
 	return message, nil
 }
 
-func (mr *MessagesRepository) GetMessagesBySenderAndReceiver(senderID int64, receiverID int64) ([]Message, error) {
+func (mr *ChatsRepository) GetMessagesBySenderAndReceiver(senderID int64, receiverID int64) ([]Message, error) {
 	rows, err := mr.db.Query(
 		queries.GetMessagesOnChatQuery,
 		sql.Named("first_user", senderID),
@@ -70,7 +70,7 @@ func (mr *MessagesRepository) GetMessagesBySenderAndReceiver(senderID int64, rec
 	return messages, nil
 }
 
-func (mr *MessagesRepository) GetChatsForUser(userId int64) ([]Chat, error) {
+func (mr *ChatsRepository) GetChatsForUser(userId int64) ([]Chat, error) {
 	rows, err := mr.db.Query(
 		queries.GetChatsForUser,
 		sql.Named("user_id", userId))

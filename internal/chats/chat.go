@@ -1,4 +1,4 @@
-package messages
+package chats
 
 import "github.com/laps15/go-chat/internal/users"
 
