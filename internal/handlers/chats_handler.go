@@ -120,5 +120,8 @@ func (h *ChatHandlers) handleSendMessage(c echo.Context) error {
 		return c.JSON(500, map[string]string{"error": "Failed to send message", "details": err.Error()})
 	}
 
-	return c.JSON(http.StatusOK, message)
+	return components.Message(components.MessageProps{
+		User:    user,
+		Message: *message,
+	}).Render(context.Background(), c.Response().Writer)
 }

@@ -77,27 +77,27 @@ func Index(props MessageIndexProps) templ.Component {
 				}
 			} else {
 				for _, chat := range props.Chats {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<li class=\"mb-1\"><a href=\"")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<li class=\"mb-1\"><a hx-get=\"")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					var templ_7745c5c3_Var4 templ.SafeURL
-					templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinURLErrs(fmt.Sprintf("/chat/%d", chat.ID))
+					var templ_7745c5c3_Var4 string
+					templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/chat/%d", chat.ID))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/chats/components/index.templ`, Line: 31, Col: 66}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/chats/components/index.templ`, Line: 32, Col: 69}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\" class=\"hover:underline\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\" hx-target=\"#main-content\" hx-swap=\"innerHTML\" class=\"hover:underline\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var5 string
 					templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(chat.Name)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/chats/components/index.templ`, Line: 31, Col: 104}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/chats/components/index.templ`, Line: 37, Col: 39}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 					if templ_7745c5c3_Err != nil {
@@ -109,7 +109,7 @@ func Index(props MessageIndexProps) templ.Component {
 					}
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</ul></div><div class=\"max-w-lg mx-auto bg-white rounded shadow p-6\"><h2 class=\"text-xl font-bold mb-4\">Start Chatting</h2><form action=\"/chat/start\" method=\"post\" class=\"space-y-4\"><div><label for=\"receiver_id\" class=\"block text-sm font-medium text-gray-700\">Chat with:</label> <input type=\"text\" name=\"receiver_id\" placeholder=\"Enter user id to chat with\" required class=\"mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring focus:ring-blue-200\"></div><div><label for=\"message\" class=\"block text-sm font-medium text-gray-700\">Message:</label> <textarea name=\"message\" placeholder=\"Type your message here\" class=\"mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring focus:ring-blue-200\"></textarea></div><button type=\"submit\" class=\"w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700\">Start Chat</button></form></div></aside><!-- Main Content --><main class=\"flex-1 bg-gray-100 p-8\"></main></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</ul></div><div class=\"max-w-lg mx-auto bg-white rounded shadow p-6\"><h2 class=\"text-xl font-bold mb-4\">Start Chatting</h2><form action=\"/chat/start\" method=\"post\" class=\"space-y-4\"><div><label for=\"receiver_id\" class=\"block text-sm font-medium text-gray-700\">Chat with:</label> <input type=\"text\" name=\"receiver_id\" placeholder=\"Enter user id to chat with\" required class=\"mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring focus:ring-blue-200\"></div><div><label for=\"message\" class=\"block text-sm font-medium text-gray-700\">Message:</label> <textarea name=\"message\" placeholder=\"Type your message here\" class=\"mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring focus:ring-blue-200\"></textarea></div><button type=\"submit\" class=\"w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700\">Start Chat</button></form></div></aside><!-- Main Content --><main class=\"flex-1 bg-gray-100 p-8\" id=\"main-content\"><h1 class=\"text-2xl font-bold mb-6\">No chat selected.</h1></main></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

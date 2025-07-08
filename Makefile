@@ -1,10 +1,10 @@
 .PHONY: css cleancss templ build run clean
 
 css:
-	npx @tailwindcss/cli -i ./css/input.css -o ./assets/css/output.css --minify
+	npx @tailwindcss/cli -i ./css/input.css -o ./assets/css/main.css --minify
 
 cleancss:
-	rm -rf ./assets/css/output.css
+	rm -rf ./assets/css/main.css
 
 templ:
 	go tool templ generate

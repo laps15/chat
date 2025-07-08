@@ -1,0 +1,29 @@
+package components
+
+import (
+    "github.com/laps15/go-chat/internal/users"
+    "github.com/laps15/go-chat/internal/chats"
+)
+
+type MessageProps struct {
+    User    *users.User
+    Message chats.Message
+}
+
+templ Message(props MessageProps) {
+    if props.Message.Sender.ID == props.User.ID {
+        <div class="border-b pb-2 flex flex-col justify-self-end">
+            <div class="text-blue-600">
+                <strong>You:</strong>
+            </div>
+            <span class="text-gray-800">{props.Message.Content}</span>
+        </div>
+    } else {
+        <div class="border-b pb-2 flex flex-col justify-self-start">
+            <div class="text-blue-600">
+                <strong>{props.Message.Sender.Username}:</strong>
+            </div>
+            <span class="text-gray-800">{props.Message.Content}</span>
+        </div>
+    }
+}

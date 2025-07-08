@@ -12,19 +12,20 @@ type ChatProps struct {
 }
 
 templ Chat(props ChatProps) {
-    <div>
+    <div class="h-screen flex flex-col p-8 space-y-4">
         <h2 class="text-xl font-bold mb-4">{props.Chat.Name}</h2>
-        <div class="bg-white rounded shadow p-6 min-h-96">
-            <ul class="space-y-4">
+        <div class="flex-1 bg-white rounded shadow p-6 min-h-96">
+            <div class="flex-col space-y-4 mb-4" id="messages">
                 for _, message := range props.Messages {
-                    <li class="border-b pb-2">
-                        <strong>{message.Sender.Username}:</strong> {message.Content}
-                    </li>
+                    @Message(MessageProps{
+                        User: props.User,
+                        Message: message,
+                    })
                 }
-            </ul>
+            </div>
         </div>
         <div>
-            <form action="/chat/send" method="post" class="mt-4 space-y-4">
+            <form hx-post="/chat/send" hx-target="#messages" hx-swap="afterend" class="mt-4 space-y-4" hx-on::after-request="if(event.detail.successful) this.reset()">
                 <input type="hidden" name="chat_id" value={props.Chat.ID} />
                 <textarea name="message" placeholder="Type your message here" class="w-full rounded border-gray-300 shadow-sm focus:ring focus:ring-blue-200"></textarea>
                 <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Send</button>

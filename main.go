@@ -72,7 +72,8 @@ func main() {
 		ChatsService: chatsService,
 	}
 
-	app.RegisterHandlers(e,
+	app.RegisterHandlers(
+		e,
 		authHandlers,
 		chatHandlers)
 

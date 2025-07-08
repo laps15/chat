@@ -28,7 +28,14 @@ templ Index(props MessageIndexProps) {
                 } else {
                 for _, chat := range props.Chats {
                     <li class="mb-1">
-                        <a href={ fmt.Sprintf("/chat/%d", chat.ID) } class="hover:underline">{ chat.Name }</a>
+                        <a
+                            hx-get={ fmt.Sprintf("/chat/%d", chat.ID) }
+                            hx-target="#main-content"
+                            hx-swap="innerHTML"
+                            class="hover:underline"
+                        >
+                            { chat.Name }
+                        </a>
                     </li>
                 }
                 }
@@ -50,7 +57,8 @@ templ Index(props MessageIndexProps) {
             </div>
             </aside>
             <!-- Main Content -->
-            <main class="flex-1 bg-gray-100 p-8">
+            <main class="flex-1 bg-gray-100 p-8" id="main-content">
+                <h1 class="text-2xl font-bold mb-6">No chat selected.</h1>
             </main>
         </div>
     }
