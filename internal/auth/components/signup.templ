@@ -1,0 +1,33 @@
+package components
+
+import (
+    "github.com/laps15/go-chat/internal/app/components"
+)
+
+templ Signup() {
+    @components.App("Signup Test") {
+        <div class="flex items-center justify-center min-h-screen bg-gray-100">
+            <div id="signup" class="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+                <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-sm">
+                    <h2 class="text-2xl font-bold mb-6 text-center">Signup</h2>
+                    <form hx-post="/signup" hx-target="#signup" hx-swap="innerHTML">
+                        <div class="mb-4">
+                            <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+                            <input type="text" id="username" name="username" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        </div>
+                        <div class="mb-4">
+                            <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                            <input type="email" id="email" name="email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        </div>
+                        <div class="mb-4">
+                            <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                            <input type="password" id="password" name="password" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded hover:bg-blue-700">Signup</button>
+                    </form>
+                    <div id="signup-message" class="mt-4 text-red-500 text-sm"></div>
+                </div>
+            </div>
+        </div>
+    }
+}
