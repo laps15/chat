@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"net/http"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 	"github.com/laps15/go-chat/internal/chats"
@@ -22,8 +23,10 @@ func (h *ChatHandlers) SetAuthGroup(g *echo.Group) {
 
 func (h *ChatHandlers) RegisterHandlers(e *echo.Echo) {
 	chatGroup := h.authGroup.Group("/chat")
-	chatGroup.GET("", h.handleHomePage)
 	chatGroup.POST("/start", h.handleNewChat)
+	chatGroup.GET("", h.handleHomePage)
+	chatGroup.POST("/send", h.handleSendMessage)
+	chatGroup.GET("/:chatid", h.handleChat)
 }
 
 func (h *ChatHandlers) handleHomePage(c echo.Context) error {
@@ -37,7 +40,7 @@ func (h *ChatHandlers) handleHomePage(c echo.Context) error {
 }
 
 func (h *ChatHandlers) handleNewChat(c echo.Context) error {
-	chatReq := new(requests.NewMessageRequest)
+	chatReq := new(requests.NewChatRequest)
 	if err := c.Bind(chatReq); err != nil {
 		return c.JSON(400, map[string]string{"error": "Invalid input"})
 	}
@@ -49,4 +52,51 @@ func (h *ChatHandlers) handleNewChat(c echo.Context) error {
 	}
 
 	return c.Redirect(http.StatusFound, "/chat")
+}
+
+func (h *ChatHandlers) handleChat(c echo.Context) error {
+	chatIdFromParams := c.Param("chatid")
+	if chatIdFromParams == "" {
+		return c.JSON(400, map[string]string{"error": "Chat ID is required"})
+	}
+	chatId, err := strconv.ParseInt(chatIdFromParams, 10, 64)
+	if err != nil {
+		return c.JSON(400, map[string]string{"error": "Invalid Chat ID"})
+	}
+
+	user := c.Get("user").(*users.User)
+	chat, err := h.ChatsService.GetChatById(chatId)
+	if err != nil {
+		return c.JSON(500, map[string]string{"error": "Failed to retrieve chat"})
+	}
+
+	if chat == nil {
+		return c.JSON(404, map[string]string{"error": "Chat not found"})
+	}
+
+	return components.Chat(components.ChatProps{
+		User:     user,
+		Chat:     chat,
+		Messages: h.ChatsService.GetMessagesForChat(chat),
+	}).Render(context.Background(), c.Response().Writer)
+}
+
+func (h *ChatHandlers) handleSendMessage(c echo.Context) error {
+	messageReq := new(requests.SendMessageRequest)
+	if err := c.Bind(messageReq); err != nil {
+		return c.JSON(400, map[string]string{"error": "Invalid input", "details": err.Error()})
+	}
+
+	chat, err := h.ChatsService.GetChatById(messageReq.ChatID)
+	if err != nil {
+		return c.JSON(500, map[string]string{"error": "Failed to retrieve chat"})
+	}
+
+	user := c.Get("user").(*users.User)
+	message, err := h.ChatsService.SendMessage(user.ID, *chat, messageReq.Message)
+	if err != nil {
+		return c.JSON(500, map[string]string{"error": "Failed to send message", "details": err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, message)
 }

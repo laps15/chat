@@ -12,6 +12,8 @@ type IChatsRepository interface {
 	CreateChat(chat *Chat) (*Chat, error)
 	SendMessage(message *Message) (*Message, error)
 	GetChatsForUser(userId int64) ([]Chat, error)
+	GetChatById(chatId int64) (*Chat, error)
+	GetMessagesForChat(chat *Chat) ([]Message, error)
 }
 
 type ChatsRepository struct {
@@ -60,9 +62,9 @@ func (mr *ChatsRepository) CreateChat(chat *Chat) (*Chat, error) {
 }
 
 func (mr *ChatsRepository) SendMessage(message *Message) (*Message, error) {
-	result, err := mr.db.Exec(queries.CreateChatQuery,
-		sql.Named("from_id", message.Sender.ID),
-		sql.Named("to_id", message.Receiver.ID),
+	result, err := mr.db.Exec(queries.CreateMessageQuery,
+		sql.Named("chat_id", message.Chat.ID),
+		sql.Named("sender_id", message.Sender.ID),
 		sql.Named("content", message.Content))
 	if err != nil {
 		return nil, err
@@ -90,11 +92,13 @@ func (mr *ChatsRepository) GetChatsForUser(userId int64) ([]Chat, error) {
 	var chats []Chat
 	for rows.Next() {
 		var chat Chat
+		chat.Participants = make(map[int64]users.User)
 		var me, receiver users.User
-		if err := rows.Scan(&me.ID, &me.Username, &chat.Name, &receiver.ID, &receiver.Username, &chat.LastMessage); err != nil {
+		if err := rows.Scan(&chat.ID, &me.ID, &me.Username, &chat.Name, &receiver.ID, &receiver.Username, &chat.LastMessage); err != nil {
 			return nil, err
 		}
-		chat.Participants = []users.User{receiver}
+		chat.Participants[me.ID] = me
+		chat.Participants[receiver.ID] = receiver
 
 		if chat.Name == "" {
 			chat.Name = receiver.Username
@@ -104,4 +108,56 @@ func (mr *ChatsRepository) GetChatsForUser(userId int64) ([]Chat, error) {
 	}
 
 	return chats, nil
+}
+
+func (mr *ChatsRepository) GetChatById(chatId int64) (*Chat, error) {
+	rows, err := mr.db.Query(
+		queries.GetChatById,
+		sql.Named("chat_id", chatId))
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var chat Chat
+	chat.Participants = make(map[int64]users.User)
+	for rows.Next() {
+		var user users.User
+		if err := rows.Scan(&chat.ID, &chat.Name, &user.ID, &user.Username); err != nil {
+			return nil, err
+		}
+		chat.Participants[user.ID] = user
+
+		if chat.Name == "" {
+			chat.Name = user.Username
+		}
+	}
+
+	return &chat, nil
+}
+
+func (mr *ChatsRepository) GetMessagesForChat(chat *Chat) ([]Message, error) {
+	rows, err := mr.db.Query(
+		queries.GetMessagesForChatQuery,
+		sql.Named("chat_id", chat.ID),
+		sql.Named("limit", 100),
+		sql.Named("offset", 0))
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var messages []Message
+	for rows.Next() {
+		var message Message
+		if err := rows.Scan(&message.ID, &message.Content, &message.CreatedAt, &message.Sender.ID, &message.Sender.Username); err != nil {
+			return nil, err
+		}
+		message.Chat = *chat
+		messages = append(messages, message)
+	}
+
+	return messages, nil
 }

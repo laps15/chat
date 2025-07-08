@@ -2,7 +2,8 @@ package queries
 
 const GetChatsForUser = `
 SELECT 
-	me.id as my_id
+	c.id as id
+	,me.id as my_id
 	,me.username as my_username
     ,c.name as chat_name
     ,other.id as receiver_id
