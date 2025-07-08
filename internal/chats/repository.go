@@ -3,6 +3,9 @@ package chats
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/laps15/go-chat/internal/chats/internal/queries"
 	"github.com/laps15/go-chat/internal/users"
@@ -12,6 +15,7 @@ type IChatsRepository interface {
 	CreateChat(chat *Chat) (*Chat, error)
 	SendMessage(message *Message) (*Message, error)
 	GetChatsForUser(userId int64) ([]Chat, error)
+	GetChatForUsers(userIds ...int64) (*Chat, error)
 	GetChatById(chatId int64) (*Chat, error)
 	GetMessagesForChat(chat *Chat) ([]Message, error)
 }
@@ -108,6 +112,49 @@ func (mr *ChatsRepository) GetChatsForUser(userId int64) ([]Chat, error) {
 	}
 
 	return chats, nil
+}
+
+func (mr *ChatsRepository) GetChatForUsers(userIds ...int64) (*Chat, error) {
+	strs := make([]string, len(userIds))
+	for i, id := range userIds {
+		strs[i] = strconv.FormatInt(id, 10)
+	}
+
+	query := fmt.Sprintf(queries.GetChatForUsersQuery, strings.Join(strs, ","))
+	rows, err := mr.db.Query(
+		query,
+		sql.Named("user_ids_count", len(userIds)))
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var rowCount = 0
+	var chat Chat
+	chat.Participants = make(map[int64]users.User)
+	for rows.Next() {
+		rowCount++
+		var user users.User
+		if err := rows.Scan(&chat.ID, &chat.Name, &user.ID, &user.Username); err != nil {
+			return nil, err
+		}
+		chat.Participants[user.ID] = user
+
+		if chat.Name == "" {
+			chat.Name = user.Username
+		}
+	}
+
+	if rowCount == 0 {
+		return nil, nil
+	}
+
+	if rowCount != len(userIds) {
+		return nil, fmt.Errorf("expected %d users, but found %d in chat", len(userIds), rowCount)
+	}
+
+	return &chat, nil
 }
 
 func (mr *ChatsRepository) GetChatById(chatId int64) (*Chat, error) {

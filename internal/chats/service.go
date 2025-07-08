@@ -10,6 +10,7 @@ type IChatsService interface {
 	CreatePrivateChat(...int64) (*Chat, error)
 	CreateChat(chatName string, userIds ...int64) (*Chat, error)
 	SendMessage(from int64, to int64, content string) (*Message, error)
+	GetPrivateChatForUsers(userIds ...int64) (*Chat, error)
 	GetChatById(chatId int64) (*Chat, error)
 	GetMessagesForChat(chat *Chat) []Message
 }
@@ -64,6 +65,19 @@ func (ms *ChatsService) SendMessage(from int64, chat Chat, content string) (*Mes
 
 func (ms *ChatsService) GetChatsForUser(user *users.User) ([]Chat, error) {
 	return ms.repository.GetChatsForUser(user.ID)
+}
+
+func (ms *ChatsService) GetPrivateChatForUsers(userIds ...int64) (*Chat, error) {
+	if len(userIds) != 2 {
+		return nil, fmt.Errorf("Two users are required to get a private chat")
+	}
+
+	chat, err := ms.repository.GetChatForUsers(userIds[0], userIds[1])
+	if err != nil {
+		return nil, fmt.Errorf("failed to get private chat for users %v and %v: %w", userIds[0], userIds[1], err)
+	}
+
+	return chat, nil
 }
 
 func (ms *ChatsService) GetChatById(chatId int64) (*Chat, error) {

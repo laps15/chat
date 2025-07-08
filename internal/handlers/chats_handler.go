@@ -46,7 +46,17 @@ func (h *ChatHandlers) handleNewChat(c echo.Context) error {
 	}
 
 	user := c.Get("user").(*users.User)
-	_, err := h.ChatsService.CreatePrivateChat(user.ID, chatReq.ReceiverID)
+
+	existingChat, err := h.ChatsService.GetPrivateChatForUsers(user.ID, chatReq.ReceiverID)
+	if err != nil {
+		return c.JSON(500, map[string]string{"error": "Failed to check existing chat", "details": err.Error()})
+	}
+
+	if existingChat != nil {
+		return c.Redirect(http.StatusFound, "/chat/"+strconv.FormatInt(existingChat.ID, 10))
+	}
+
+	_, err = h.ChatsService.CreatePrivateChat(user.ID, chatReq.ReceiverID)
 	if err != nil {
 		return c.JSON(500, map[string]string{"error": "Failed to create chat"})
 	}
@@ -70,7 +80,11 @@ func (h *ChatHandlers) handleChat(c echo.Context) error {
 		return c.JSON(500, map[string]string{"error": "Failed to retrieve chat"})
 	}
 
-	if chat == nil {
+	if chat == nil || chat.Participants == nil {
+		return c.JSON(404, map[string]string{"error": "Chat not found"})
+	}
+
+	if _, ok := chat.Participants[user.ID]; !ok {
 		return c.JSON(404, map[string]string{"error": "Chat not found"})
 	}
 
@@ -82,6 +96,7 @@ func (h *ChatHandlers) handleChat(c echo.Context) error {
 }
 
 func (h *ChatHandlers) handleSendMessage(c echo.Context) error {
+	user := c.Get("user").(*users.User)
 	messageReq := new(requests.SendMessageRequest)
 	if err := c.Bind(messageReq); err != nil {
 		return c.JSON(400, map[string]string{"error": "Invalid input", "details": err.Error()})
@@ -92,7 +107,14 @@ func (h *ChatHandlers) handleSendMessage(c echo.Context) error {
 		return c.JSON(500, map[string]string{"error": "Failed to retrieve chat"})
 	}
 
-	user := c.Get("user").(*users.User)
+	if chat == nil || chat.Participants == nil {
+		return c.JSON(404, map[string]string{"error": "Chat not found"})
+	}
+
+	if _, ok := chat.Participants[user.ID]; !ok {
+		return c.JSON(403, map[string]string{"error": "You are not a participant in this chat"})
+	}
+
 	message, err := h.ChatsService.SendMessage(user.ID, *chat, messageReq.Message)
 	if err != nil {
 		return c.JSON(500, map[string]string{"error": "Failed to send message", "details": err.Error()})
