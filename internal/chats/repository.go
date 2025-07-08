@@ -16,7 +16,7 @@ type IChatsRepository interface {
 	SendMessage(message *Message) (*Message, error)
 	GetChatsForUser(userId int64) ([]Chat, error)
 	GetChatForUsers(userIds ...int64) (*Chat, error)
-	GetChatById(chatId int64) (*Chat, error)
+	GetChatById(userId int64, chatId int64) (*Chat, error)
 	GetMessagesForChat(chat *Chat) ([]Message, error)
 }
 
@@ -157,7 +157,7 @@ func (mr *ChatsRepository) GetChatForUsers(userIds ...int64) (*Chat, error) {
 	return &chat, nil
 }
 
-func (mr *ChatsRepository) GetChatById(chatId int64) (*Chat, error) {
+func (mr *ChatsRepository) GetChatById(userId int64, chatId int64) (*Chat, error) {
 	rows, err := mr.db.Query(
 		queries.GetChatById,
 		sql.Named("chat_id", chatId))
@@ -167,6 +167,7 @@ func (mr *ChatsRepository) GetChatById(chatId int64) (*Chat, error) {
 	}
 	defer rows.Close()
 
+	var usernamesInChat []string
 	var chat Chat
 	chat.Participants = make(map[int64]users.User)
 	for rows.Next() {
@@ -176,9 +177,13 @@ func (mr *ChatsRepository) GetChatById(chatId int64) (*Chat, error) {
 		}
 		chat.Participants[user.ID] = user
 
-		if chat.Name == "" {
-			chat.Name = user.Username
+		if user.ID != userId {
+			usernamesInChat = append(usernamesInChat, user.Username)
 		}
+	}
+
+	if chat.Name == "" && len(usernamesInChat) > 0 {
+		chat.Name = strings.Join(usernamesInChat, ", ")
 	}
 
 	return &chat, nil

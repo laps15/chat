@@ -26,7 +26,7 @@ func (h *ChatHandlers) RegisterHandlers(e *echo.Echo) {
 	chatGroup.POST("/start", h.handleNewChat)
 	chatGroup.GET("", h.handleHomePage)
 	chatGroup.POST("/send", h.handleSendMessage)
-	chatGroup.GET("/:chatid", h.handleChat)
+	chatGroup.GET("/:chatid", h.handleChatPage)
 }
 
 func (h *ChatHandlers) handleHomePage(c echo.Context) error {
@@ -64,7 +64,7 @@ func (h *ChatHandlers) handleNewChat(c echo.Context) error {
 	return c.Redirect(http.StatusFound, "/chat")
 }
 
-func (h *ChatHandlers) handleChat(c echo.Context) error {
+func (h *ChatHandlers) handleChatPage(c echo.Context) error {
 	chatIdFromParams := c.Param("chatid")
 	if chatIdFromParams == "" {
 		return c.JSON(400, map[string]string{"error": "Chat ID is required"})
@@ -75,7 +75,7 @@ func (h *ChatHandlers) handleChat(c echo.Context) error {
 	}
 
 	user := c.Get("user").(*users.User)
-	chat, err := h.ChatsService.GetChatById(chatId)
+	chat, err := h.ChatsService.GetChatById(user.ID, chatId)
 	if err != nil {
 		return c.JSON(500, map[string]string{"error": "Failed to retrieve chat"})
 	}
@@ -102,7 +102,7 @@ func (h *ChatHandlers) handleSendMessage(c echo.Context) error {
 		return c.JSON(400, map[string]string{"error": "Invalid input", "details": err.Error()})
 	}
 
-	chat, err := h.ChatsService.GetChatById(messageReq.ChatID)
+	chat, err := h.ChatsService.GetChatById(user.ID, messageReq.ChatID)
 	if err != nil {
 		return c.JSON(500, map[string]string{"error": "Failed to retrieve chat"})
 	}

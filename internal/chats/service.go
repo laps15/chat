@@ -11,7 +11,7 @@ type IChatsService interface {
 	CreateChat(chatName string, userIds ...int64) (*Chat, error)
 	SendMessage(from int64, to int64, content string) (*Message, error)
 	GetPrivateChatForUsers(userIds ...int64) (*Chat, error)
-	GetChatById(chatId int64) (*Chat, error)
+	GetChatById(userId int64, chatId int64) (*Chat, error)
 	GetMessagesForChat(chat *Chat) []Message
 }
 
@@ -80,8 +80,8 @@ func (ms *ChatsService) GetPrivateChatForUsers(userIds ...int64) (*Chat, error) 
 	return chat, nil
 }
 
-func (ms *ChatsService) GetChatById(chatId int64) (*Chat, error) {
-	return ms.repository.GetChatById(chatId)
+func (ms *ChatsService) GetChatById(userId int64, chatId int64) (*Chat, error) {
+	return ms.repository.GetChatById(userId, chatId)
 }
 
 func (ms *ChatsService) GetMessagesForChat(chat *Chat) []Message {
