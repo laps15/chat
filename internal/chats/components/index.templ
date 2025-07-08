@@ -22,7 +22,7 @@ templ Index(props MessageIndexProps) {
             } else {
                 for _, chat := range props.Chats {
                     <li>
-                        <a href="/chat/#chat.ID">{chat.Receiver.Username}</a>
+                        <a href="/chat/#chat.ID">{chat.Name}</a>
                     </li>
                 }
             }
@@ -37,7 +37,7 @@ templ Index(props MessageIndexProps) {
                 </div>
                 <div>
                     <label for="message">Message:</label>
-                    <input type="area" name="message" placeholder="Type your message here" required />
+                    <input type="area" name="message" placeholder="Type your message here" />
                 </div>
                 <button type="submit">Start Chat</button>
             </form>

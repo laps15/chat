@@ -12,6 +12,7 @@ type Message struct {
 }
 
 type Chat struct {
-	Receiver    users.User `json:"receiver"`
-	LastMessage string     `json:"last_message"`
+	Name         string       `json:"name"`
+	Participants []users.User `json:"participants"`
+	LastMessage  string       `json:"last_message"`
 }

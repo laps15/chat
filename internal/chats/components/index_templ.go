@@ -81,9 +81,9 @@ func Index(props MessageIndexProps) templ.Component {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var4 string
-					templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(chat.Receiver.Username)
+					templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(chat.Name)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/chats/components/index.templ`, Line: 25, Col: 72}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/chats/components/index.templ`, Line: 25, Col: 59}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 					if templ_7745c5c3_Err != nil {
@@ -95,7 +95,7 @@ func Index(props MessageIndexProps) templ.Component {
 					}
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</ul></div><div><h2>Start Chatting:</h2><form action=\"/chat/start\" method=\"post\"><div><label for=\"receiver_id\">Chat with:</label> <input type=\"text\" name=\"receiver_id\" placeholder=\"Enter user id to chat with\" required></div><div><label for=\"message\">Message:</label> <input type=\"area\" name=\"message\" placeholder=\"Type your message here\" required></div><button type=\"submit\">Start Chat</button></form></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</ul></div><div><h2>Start Chatting:</h2><form action=\"/chat/start\" method=\"post\"><div><label for=\"receiver_id\">Chat with:</label> <input type=\"text\" name=\"receiver_id\" placeholder=\"Enter user id to chat with\" required></div><div><label for=\"message\">Message:</label> <input type=\"area\" name=\"message\" placeholder=\"Type your message here\"></div><button type=\"submit\">Start Chat</button></form></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

@@ -43,7 +43,7 @@ func (h *ChatHandlers) handleNewChat(c echo.Context) error {
 	}
 
 	user := c.Get("user").(*users.User)
-	_, err := h.ChatsService.CreateMessage(user.ID, chatReq.ReceiverID, chatReq.Message)
+	_, err := h.ChatsService.CreatePrivateChat(user.ID, chatReq.ReceiverID)
 	if err != nil {
 		return c.JSON(500, map[string]string{"error": "Failed to create chat"})
 	}

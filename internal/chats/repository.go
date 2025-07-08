@@ -1,14 +1,16 @@
 package chats
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/laps15/go-chat/internal/chats/internal/queries"
+	"github.com/laps15/go-chat/internal/users"
 )
 
 type IChatsRepository interface {
-	CreateMessage(message *Message) (*Message, error)
-	GetMessagesBySenderAndReceiver(senderID int64, receiverID int64) ([]Message, error)
+	CreateChat(chat *Chat) (*Chat, error)
+	SendMessage(message *Message) (*Message, error)
 	GetChatsForUser(userId int64) ([]Chat, error)
 }
 
@@ -20,8 +22,45 @@ func NewChatsRepository(db *sql.DB) *ChatsRepository {
 	return &ChatsRepository{db: db}
 }
 
-func (mr *ChatsRepository) CreateMessage(message *Message) (*Message, error) {
-	result, err := mr.db.Exec(queries.CreateMessageQuery,
+func (mr *ChatsRepository) CreateChat(chat *Chat) (*Chat, error) {
+	tx, err := mr.db.BeginTx(context.Background(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := mr.db.Exec(queries.CreateChatQuery,
+		sql.Named("chat_name", chat.Name))
+	if err != nil {
+		return nil, err
+	}
+
+	chatId, err := res.LastInsertId()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, participant := range chat.Participants {
+		_, err := mr.db.Exec(queries.AddUserToChatQuery,
+			sql.Named("chat_id", chatId),
+			sql.Named("user_id", participant.ID))
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		if rollbackErr := tx.Rollback(); rollbackErr != nil {
+			return nil, rollbackErr
+		}
+		return nil, err
+	}
+
+	return chat, nil
+}
+
+func (mr *ChatsRepository) SendMessage(message *Message) (*Message, error) {
+	result, err := mr.db.Exec(queries.CreateChatQuery,
 		sql.Named("from_id", message.Sender.ID),
 		sql.Named("to_id", message.Receiver.ID),
 		sql.Named("content", message.Content))
@@ -38,42 +77,11 @@ func (mr *ChatsRepository) CreateMessage(message *Message) (*Message, error) {
 	return message, nil
 }
 
-func (mr *ChatsRepository) GetMessagesBySenderAndReceiver(senderID int64, receiverID int64) ([]Message, error) {
-	rows, err := mr.db.Query(
-		queries.GetMessagesOnChatQuery,
-		sql.Named("first_user", senderID),
-		sql.Named("second_user", receiverID),
-		sql.Named("limit", 100),
-		sql.Named("offset", 0))
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var messages []Message
-	for rows.Next() {
-		var message Message
-		if err := rows.Scan(
-			&message.ID,
-			&message.Sender.ID,
-			&message.Receiver.ID,
-			&message.Content,
-			&message.CreatedAt,
-			&message.ReadAt,
-			&message.Sender.Username,
-			&message.Receiver.Username); err != nil {
-			return nil, err
-		}
-		messages = append(messages, message)
-	}
-
-	return messages, nil
-}
-
 func (mr *ChatsRepository) GetChatsForUser(userId int64) ([]Chat, error) {
 	rows, err := mr.db.Query(
 		queries.GetChatsForUser,
 		sql.Named("user_id", userId))
+
 	if err != nil {
 		return nil, err
 	}
@@ -82,9 +90,16 @@ func (mr *ChatsRepository) GetChatsForUser(userId int64) ([]Chat, error) {
 	var chats []Chat
 	for rows.Next() {
 		var chat Chat
-		if err := rows.Scan(&chat.Receiver.ID, &chat.Receiver.Username, &chat.LastMessage); err != nil {
+		var me, receiver users.User
+		if err := rows.Scan(&me.ID, &me.Username, &chat.Name, &receiver.ID, &receiver.Username, &chat.LastMessage); err != nil {
 			return nil, err
 		}
+		chat.Participants = []users.User{receiver}
+
+		if chat.Name == "" {
+			chat.Name = receiver.Username
+		}
+
 		chats = append(chats, chat)
 	}
 
